@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <title>Comicon Reader - Material 3 Expressive Comic & PDF Reader</title>
+  <meta name="description" content="Material 3 Expressive book-like PDF and Comic Book reader with realistic 3D page turning, folding, pinch-to-zoom, bookmarks, dark mode, offline PWA and multi-device cloud sync.">
+  <meta name="theme-color" content="#0c0e14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Comicon">
+
+  <!-- Manifest & Favicons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/library.css">
+  <link rel="stylesheet" href="css/reader.css">
+</head>
+<body>
+
+  <!-- Material 3 Expressive Top App Bar -->
+  <header class="m3-top-app-bar" id="main-navbar">
+    <div class="m3-brand-cluster" id="nav-brand-logo">
+      <div class="m3-app-icon">
+        <img src="assets/icons/icon.svg" alt="Comicon Logo">
+      </div>
+      <div class="m3-app-title-wrap">
+        <h1 class="m3-app-title">Comicon</h1>
+        <span class="m3-app-badge">Book-Feel Reader</span>
+      </div>
+    </div>
+
+    <!-- M3 Search Bar -->
+    <div class="m3-search-bar">
+      <div class="m3-search-inner">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="global-search-input" class="m3-search-input" placeholder="Search comics, manga, authors, genres..." autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="m3-top-actions">
+      <!-- Cloud Sync Status Pill -->
+      <button class="m3-btn m3-btn-tonal" id="cloud-sync-status-pill" title="Cross-Device Cloud Sync Ready" style="padding: 6px 14px; font-size: 0.8rem; border-radius: var(--md-shape-corner-full);">
+        <span class="m3-chip-dot" style="background-color: var(--md-sys-color-primary);"></span>
+        <span class="sync-text">Synced</span>
+      </button>
+
+      <!-- Cloud Sync Modal Trigger -->
+      <button class="m3-btn-icon" id="btn-open-cloud-sync" title="Multi-Device Sync & Backup">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+        </svg>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button class="m3-btn-icon" id="btn-toggle-theme" title="Switch Theme (Dark, OLED, Sepia, Light)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
+
+      <!-- Keyboard Shortcuts (?) -->
+      <button class="m3-btn-icon" id="btn-keyboard-help" title="Keyboard Shortcuts (?)">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+      </button>
+
+      <!-- PWA Install Button -->
+      <button class="m3-btn m3-btn-tonal hidden" id="btn-pwa-install" title="Install App on Device">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Install</span>
+      </button>
+
+      <!-- Desktop Header Add Comic Button -->
+      <button class="m3-btn m3-btn-filled" id="btn-open-add-modal" style="display: none;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Add Comic</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- LIBRARY VIEW -->
+  <main class="library-view-container" id="library-view">
+    
+    <!-- Material 3 Mobile Search Row -->
+    <div class="m3-mobile-search-row">
+      <div class="m3-search-inner">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="mobile-search-input" class="m3-search-input" placeholder="Search comics, manga, authors, genres..." autocomplete="off">
+      </div>
+    </div>
+
+    <!-- Material 3 Expressive Stats Row -->
+    <section class="m3-stats-row">
+      <div class="m3-stat-card">
+        <div class="m3-stat-icon" style="background: rgba(128, 212, 255, 0.15); color: var(--md-sys-color-primary);">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+        <div class="m3-stat-info">
+          <span class="m3-stat-val" id="stat-total-books">0</span>
+          <span class="m3-stat-lbl">Comics & PDFs</span>
+        </div>
+      </div>
+
+      <div class="m3-stat-card">
+        <div class="m3-stat-icon" style="background: rgba(201, 191, 255, 0.15); color: var(--md-sys-color-secondary);">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+        </div>
+        <div class="m3-stat-info">
+          <span class="m3-stat-val" id="stat-pages-read">0</span>
+          <span class="m3-stat-lbl">Pages Flipped</span>
+        </div>
+      </div>
+
+      <div class="m3-stat-card">
+        <div class="m3-stat-icon" style="background: rgba(255, 177, 200, 0.15); color: var(--md-sys-color-tertiary);">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="m3-stat-info">
+          <span class="m3-stat-val" id="stat-completed-books">0</span>
+          <span class="m3-stat-lbl">Completed</span>
+        </div>
+      </div>
+
+      <div class="m3-stat-card">
+        <div class="m3-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+        <div class="m3-stat-info">
+          <span class="m3-stat-val">100%</span>
+          <span class="m3-stat-lbl">Offline PWA</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Shelves & Folders Row -->
+    <section class="m3-shelves-row">
+      <div class="m3-shelves-scroll" id="library-shelves-list">
+        <!-- Rendered by library.js -->
+      </div>
+      <button class="m3-filter-chip" id="btn-create-shelf" title="Create New Folder" style="border-style: dashed;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>New Shelf</span>
+      </button>
+    </section>
+
+    <!-- Genre Chips & Sort Row -->
+    <section class="m3-shelves-row" style="margin-bottom: 22px;">
+      <div class="m3-shelves-scroll" id="genre-filters">
+        <!-- Rendered by library.js -->
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <select class="m3-select" id="library-sort-select" style="padding: 6px 12px; font-size: 0.8rem; width: auto; border-radius: var(--md-shape-corner-full);">
+          <option value="lastRead">🕒 Recently Read</option>
+          <option value="title">🔤 Title (A-Z)</option>
+          <option value="dateAdded">📅 Date Added</option>
+          <option value="progress">📊 Progress</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Comic Books Grid -->
+    <section class="comic-grid" id="comic-books-grid">
+      <!-- Rendered dynamically -->
+    </section>
+
+    <!-- Drag & Drop Visual Overlay -->
+    <div class="drag-drop-overlay" id="library-dropzone">
+      <div class="drop-icon-pulse">
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </div>
+      <h2>Drop Comic Files Here</h2>
+      <p style="color: var(--md-sys-color-on-surface-variant); margin-top: 8px;">Supports PDF documents, CBZ/ZIP comic archives, and image sets</p>
+    </div>
+  </main>
+
+  <!-- Material 3 Expressive Floating Action Button (FAB) -->
+  <button class="m3-fab" id="m3-fab-add-comic" title="Import Comics & PDFs">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+    <span>Add Comic</span>
+  </button>
+
+  <!-- Material 3 Expressive Mobile Bottom Navigation Bar -->
+  <nav class="m3-bottom-nav" id="m3-bottom-nav">
+    <button class="m3-nav-item active" data-nav="library">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Library</span>
+    </button>
+
+    <button class="m3-nav-item" data-nav="favorites">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Favorites</span>
+    </button>
+
+    <button class="m3-nav-item" data-nav="recent">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Recent</span>
+    </button>
+
+    <button class="m3-nav-item" data-nav="sync">
+      <div class="m3-nav-pill">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+        </svg>
+      </div>
+      <span class="m3-nav-label">Sync</span>
+    </button>
+  </nav>
+
+  <!-- READER VIEW (Full screen book-like experience) -->
+  <div class="reader-view-container hidden" id="reader-view">
+    
+    <!-- Floating Top Bar -->
+    <header class="reader-top-bar" id="reader-header">
+      <div class="reader-left-cluster">
+        <button class="m3-btn m3-btn-tonal" id="btn-back-to-library" title="Back to Library (Esc)" style="padding: 6px 14px; font-size: 0.84rem;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Library</span>
+        </button>
+
+        <div class="reader-book-details">
+          <h2 class="reader-book-title" id="reader-book-title">Comic Title</h2>
+          <span class="reader-book-info" id="reader-book-info">Issue #1</span>
+        </div>
+      </div>
+
+      <div class="reader-right-cluster">
+        <!-- Reading Direction Toggle -->
+        <button class="m3-btn m3-btn-tonal btn-sm" id="btn-toggle-direction" title="Toggle Reading Direction (LTR / Manga RTL)" style="padding: 6px 12px; font-size: 0.8rem;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 3 21 8 16 13"></polyline>
+            <line x1="21" y1="8" x2="9" y2="8"></line>
+            <path d="M21 14v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"></path>
+          </svg>
+          <span id="direction-label">LTR</span>
+        </button>
+
+        <!-- Spread Mode Toggle (2-page vs 1-page) -->
+        <button class="m3-btn m3-btn-tonal btn-sm" id="btn-toggle-spread" title="Toggle 2-Page Book Spread vs Single Page" style="padding: 6px 12px; font-size: 0.8rem;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="18" rx="2"></rect>
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+          </svg>
+          <span id="spread-label">Spread</span>
+        </button>
+
+        <!-- Reading Filter Select -->
+        <select class="filter-select-pill" id="reader-filter-select" title="Reading Color Filter">
+          <option value="none">Normal</option>
+          <option value="sepia">Cozy Sepia</option>
+          <option value="invert">Manga Invert</option>
+          <option value="contrast">High Contrast</option>
+          <option value="night-warm">Warm Night</option>
+        </select>
+
+        <!-- Fullscreen -->
+        <button class="m3-btn-icon" id="btn-reader-fullscreen" title="Toggle Fullscreen (F)" style="width: 36px; height: 36px;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Corner Hanging Bookmark Ribbon -->
+    <div class="reader-bookmark-ribbon" id="active-bookmark-ribbon" title="Click to bookmark this page"></div>
+
+    <!-- Zoom & Pan Stage -->
+    <div class="zoom-stage-viewport" id="zoom-viewport">
+      <div class="book-stage-wrap" id="book-container">
+        <!-- Rendered by StPageFlip -->
+      </div>
+    </div>
+
+    <!-- Comic Inspector Magnifier Loupe -->
+    <div class="comic-magnifier-loupe" id="comic-loupe"></div>
+
+    <!-- Floating Bottom Scrubber & Controls Bar -->
+    <footer class="reader-bottom-bar" id="reader-footer">
+      <button class="m3-btn-icon" id="btn-prev-page" title="Previous Page (Left Arrow)" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+
+      <!-- Scrubber -->
+      <div class="scrubber-wrap">
+        <div class="scrubber-track-wrap">
+          <div class="scrubber-progress-fill" id="page-slider-progress"></div>
+          <input type="range" class="scrubber-slider" id="page-slider" min="0" max="100" value="0">
+        </div>
+        <span class="page-counter-pill" id="page-counter">1 / 1</span>
+      </div>
+
+      <button class="m3-btn-icon" id="btn-next-page" title="Next Page (Right Arrow / Space)" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+
+      <!-- Zoom Controls Cluster -->
+      <div class="zoom-controls-cluster">
+        <button class="m3-btn-icon" id="btn-zoom-out" title="Zoom Out (-)" style="width: 34px; height: 34px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <span class="zoom-level-badge" id="zoom-level-text">100%</span>
+        <button class="m3-btn-icon" id="btn-zoom-in" title="Zoom In (+)" style="width: 34px; height: 34px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <button class="m3-btn-icon" id="btn-zoom-reset" title="Reset Zoom" style="width: 34px; height: 34px;">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Magnifier Loupe Toggle -->
+      <button class="m3-btn-icon" id="btn-toggle-loupe" title="Comic Text Magnifier Loupe (Z)" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+
+      <!-- Bookmark button -->
+      <button class="m3-btn-icon" id="btn-toggle-bookmark" title="Bookmark Current Page (B)" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </button>
+
+      <!-- Bookmarks Drawer Toggle -->
+      <button class="m3-btn-icon" id="btn-toggle-bookmarks-drawer" title="View All Bookmarks" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+      </button>
+
+      <!-- Sound Toggle -->
+      <button class="m3-btn-icon active" id="btn-toggle-sound" title="Toggle Page Flip Sound" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+
+      <!-- Zen Mode -->
+      <button class="m3-btn-icon" id="btn-toggle-zen" title="Zen Fullscreen Mode" style="width: 38px; height: 38px;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+    </footer>
+
+    <!-- Bookmarks Drawer / Bottom Sheet -->
+    <aside class="bookmarks-drawer" id="bookmarks-drawer">
+      <div class="drawer-header">
+        <h3>
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Bookmarks (<span id="bookmarks-count-badge">0</span>)
+        </h3>
+        <button class="btn-close-modal" id="btn-close-bookmarks-drawer">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="bookmarks-list-scroll" id="bookmarks-list-container">
+        <!-- Rendered by PageFlipController -->
+      </div>
+    </aside>
+  </div>
+
+  <!-- MATERIAL 3 MODAL BOTTOM SHEET: IMPORT COMICS & FILES -->
+  <div class="m3-bottom-sheet-overlay" id="modal-add-comic">
+    <div class="m3-sheet-backdrop"></div>
+    <div class="m3-bottom-sheet">
+      <!-- Drag Handle -->
+      <div class="m3-drag-handle-wrap">
+        <div class="m3-drag-handle"></div>
+      </div>
+
+      <div class="m3-sheet-header">
+        <h2>Import Comics & Files</h2>
+        <button class="btn-close-modal">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Material 3 Import Source Cards -->
+      <div class="m3-import-sources-grid">
+        <div class="m3-source-card active" data-tab="tab-url-link">
+          <div class="m3-source-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+          </div>
+          <span class="m3-source-title">URL Link</span>
+          <span class="m3-source-subtitle">PDF / CBZ / Image</span>
+        </div>
+
+        <div class="m3-source-card" data-tab="tab-local-files">
+          <div class="m3-source-icon" style="background: rgba(201, 191, 255, 0.15); color: var(--md-sys-color-secondary);">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+          </div>
+          <span class="m3-source-title">PDF & Files</span>
+          <span class="m3-source-subtitle">Local storage</span>
+        </div>
+
+        <div class="m3-source-card" data-tab="tab-batch-urls">
+          <div class="m3-source-icon" style="background: rgba(255, 177, 200, 0.15); color: var(--md-sys-color-tertiary);">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+          </div>
+          <span class="m3-source-title">Chapter URLs</span>
+          <span class="m3-source-subtitle">Multi-page list</span>
+        </div>
+
+        <div class="m3-source-card" data-tab="tab-samples">
+          <div class="m3-source-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+          <span class="m3-source-title">Demo Library</span>
+          <span class="m3-source-subtitle">1-Click samples</span>
+        </div>
+      </div>
+
+      <!-- TAB 1: DIRECT URL LINK IMPORT -->
+      <div class="modal-tab-pane active" id="tab-url-link">
+        <form id="form-import-direct-url">
+          <div class="m3-text-field">
+            <label>Comic or PDF URL</label>
+            <input type="url" id="input-direct-url" class="m3-input" placeholder="https://example.com/comics/issue1.pdf" required>
+          </div>
+
+          <!-- Quick Try Pills -->
+          <div style="margin-bottom: 16px;">
+            <span style="font-size: 0.74rem; font-weight: 700; color: var(--md-sys-color-on-surface-variant); display: block; margin-bottom: 6px;">Try Example Link:</span>
+            <span class="url-example-pill" onclick="document.getElementById('input-direct-url').value='https://raw.githubusercontent.com/mozilla/pdf.js/master/web/compressed.tracemonkey-pldi-09.pdf'; document.getElementById('input-url-title').value='Mozilla PDF Document'; document.getElementById('input-url-genre').value='Graphic Novel';">
+              📄 Sample PDF Doc
+            </span>
+            <span class="url-example-pill" onclick="document.getElementById('input-direct-url').value='https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1000'; document.getElementById('input-url-title').value='Cyberpunk Ronin'; document.getElementById('input-url-genre').value='Manga';">
+              🎨 Manga Artwork
+            </span>
+            <span class="url-example-pill" onclick="document.getElementById('input-direct-url').value='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1000'; document.getElementById('input-url-title').value='Galactic Rift'; document.getElementById('input-url-genre').value='Sci-Fi';">
+              🌌 Nebula Splash
+            </span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="m3-text-field">
+              <label>Title (Optional)</label>
+              <input type="text" id="input-url-title" class="m3-input" placeholder="Auto-detected from URL">
+            </div>
+            <div class="m3-text-field">
+              <label>Genre</label>
+              <input type="text" id="input-url-genre" class="m3-input" value="Comic">
+            </div>
+          </div>
+
+          <button type="submit" class="m3-btn m3-btn-filled" style="width: 100%; padding: 14px; margin-top: 4px;">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Fetch & Import from URL</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- TAB 2: LOCAL FILE PICKER -->
+      <div class="modal-tab-pane" id="tab-local-files">
+        <div class="m3-file-pickers-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <!-- 1. PDF File -->
+          <label class="m3-source-card" style="cursor: pointer; text-align: left; align-items: flex-start; padding: 14px;">
+            <div class="m3-source-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; width: 36px; height: 36px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <strong style="font-size: 0.88rem; margin-top: 6px;">PDF Document</strong>
+            <span style="font-size: 0.72rem; color: var(--md-sys-color-on-surface-variant);">Single or Multi-page PDF</span>
+            <input type="file" id="input-comic-file-pdf" accept=".pdf" class="hidden">
+          </label>
+
+          <!-- 2. CBZ / ZIP Comic -->
+          <label class="m3-source-card" style="cursor: pointer; text-align: left; align-items: flex-start; padding: 14px;">
+            <div class="m3-source-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7; width: 36px; height: 36px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+            </div>
+            <strong style="font-size: 0.88rem; margin-top: 6px;">CBZ / ZIP Comic</strong>
+            <span style="font-size: 0.72rem; color: var(--md-sys-color-on-surface-variant);">Comic Book Archive</span>
+            <input type="file" id="input-comic-file-cbz" accept=".cbz,.zip" class="hidden">
+          </label>
+
+          <!-- 3. Images Batch -->
+          <label class="m3-source-card" style="cursor: pointer; text-align: left; align-items: flex-start; padding: 14px;">
+            <div class="m3-source-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981; width: 36px; height: 36px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+            </div>
+            <strong style="font-size: 0.88rem; margin-top: 6px;">Image Pages</strong>
+            <span style="font-size: 0.72rem; color: var(--md-sys-color-on-surface-variant);">JPG, PNG, WebP pages</span>
+            <input type="file" id="input-comic-file-img" accept="image/*" multiple class="hidden">
+          </label>
+
+          <!-- 4. Folder of Pages -->
+          <label class="m3-source-card" style="cursor: pointer; text-align: left; align-items: flex-start; padding: 14px;">
+            <div class="m3-source-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; width: 36px; height: 36px;">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <strong style="font-size: 0.88rem; margin-top: 6px;">Folder of Images</strong>
+            <span style="font-size: 0.72rem; color: var(--md-sys-color-on-surface-variant);">Entire Scanlation folder</span>
+            <input type="file" id="input-comic-file-folder" webkitdirectory directory multiple class="hidden">
+          </label>
+        </div>
+
+        <!-- Universal picker -->
+        <label class="m3-btn m3-btn-filled" style="cursor: pointer; padding: 14px 20px; font-size: 0.94rem; width: 100%; margin-bottom: 12px; justify-content: center;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Choose Any File (PDF / CBZ / Images)</span>
+          <input type="file" id="input-comic-file" accept=".pdf,.cbz,.zip,image/*" multiple class="hidden">
+        </label>
+
+        <div style="border: 2px dashed var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-md); padding: 16px; text-align: center; color: var(--md-sys-color-on-surface-variant); font-size: 0.82rem;">
+          Drag & drop comic files or scanlation folders anywhere on screen to read instantly offline!
+        </div>
+      </div>
+
+      <!-- TAB 3: BATCH IMAGE URLS -->
+      <div class="modal-tab-pane" id="tab-batch-urls">
+        <form id="form-import-batch-urls">
+          <div class="m3-text-field">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="margin-bottom: 0;">Image URLs (One Per Line)</label>
+              <button type="button" class="m3-btn m3-btn-tonal btn-sm" style="padding: 2px 10px; font-size: 0.72rem;" onclick="
+                document.getElementById('input-batch-image-urls').value = 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=900\nhttps://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=900\nhttps://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=900';
+                document.getElementById('input-batch-title').value = 'Neo-Tokyo Chronicles: Chapter 1';
+                document.getElementById('input-batch-genre').value = 'Manga';
+                document.getElementById('select-batch-direction').value = 'rtl';
+              ">
+                Fill Demo URLs
+              </button>
+            </div>
+            <textarea id="input-batch-image-urls" class="batch-urls-textarea m3-textarea" placeholder="https://example.com/page1.jpg&#10;https://example.com/page2.jpg&#10;https://example.com/page3.jpg" required></textarea>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+            <div class="m3-text-field">
+              <label>Issue Title</label>
+              <input type="text" id="input-batch-title" class="m3-input" placeholder="Webcomic Issue #1" required>
+            </div>
+            <div class="m3-text-field">
+              <label>Author / Artist</label>
+              <input type="text" id="input-batch-author" class="m3-input" value="Web Creator">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="m3-text-field">
+              <label>Genre</label>
+              <input type="text" id="input-batch-genre" class="m3-input" value="Manga">
+            </div>
+            <div class="m3-text-field">
+              <label>Reading Direction</label>
+              <select id="select-batch-direction" class="m3-select">
+                <option value="ltr">Left-to-Right (Western)</option>
+                <option value="rtl">Right-to-Left (Manga)</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="m3-btn m3-btn-filled" style="width: 100%; padding: 14px; margin-top: 4px;">
+            <span>Assemble Comic Issue</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- TAB 4: DEMO SAMPLES -->
+      <div class="modal-tab-pane" id="tab-samples">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="m3-btn m3-btn-tonal" id="btn-load-sample-all" style="padding: 14px; justify-content: flex-start; text-align: left; border-radius: var(--md-shape-corner-lg);">
+            <span style="font-size: 1.5rem; margin-right: 10px;">📚</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="color: var(--md-sys-color-on-surface);">Load Complete Demo Library</strong>
+              <span style="font-size: 0.76rem; color: var(--md-sys-color-on-surface-variant);">Includes Sci-Fi full color, Manga RTL, and Sample Bookmarks</span>
+            </div>
+          </button>
+
+          <button class="m3-btn m3-btn-tonal" id="btn-load-sample-nebula" style="padding: 14px; justify-content: flex-start; text-align: left; border-radius: var(--md-shape-corner-lg);">
+            <span style="font-size: 1.5rem; margin-right: 10px;">🌌</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="color: var(--md-sys-color-on-surface);">Echoes of Nebula: Issue #1</strong>
+              <span style="font-size: 0.76rem; color: var(--md-sys-color-on-surface-variant);">Sci-Fi Cyberpunk comic • Western LTR (3 pages)</span>
+            </div>
+          </button>
+
+          <button class="m3-btn m3-btn-tonal" id="btn-load-sample-samurai" style="padding: 14px; justify-content: flex-start; text-align: left; border-radius: var(--md-shape-corner-lg);">
+            <span style="font-size: 1.5rem; margin-right: 10px;">⚔️</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="color: var(--md-sys-color-on-surface);">Shadow Samurai: Chapter 1</strong>
+              <span style="font-size: 0.76rem; color: var(--md-sys-color-on-surface-variant);">Action Manga • Authentic Japanese Right-to-Left (RTL)</span>
+            </div>
+          </button>
+
+          <button class="m3-btn m3-btn-tonal" id="btn-load-sample-pdf" style="padding: 14px; justify-content: flex-start; text-align: left; border-radius: var(--md-shape-corner-lg);">
+            <span style="font-size: 1.5rem; margin-right: 10px;">📄</span>
+            <div style="display: flex; flex-direction: column;">
+              <strong style="color: var(--md-sys-color-on-surface);">Mozilla Quantum PDF Document</strong>
+              <span style="font-size: 0.76rem; color: var(--md-sys-color-on-surface-variant);">Real PDF document • High-DPI crisp vector text</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CLOUD SYNC & MULTI-DEVICE PAIRING -->
+  <div class="modal-overlay" id="modal-cloud-sync">
+    <div class="modal-backdrop"></div>
+    <div class="modal-window" style="max-width: 580px;">
+      <div class="modal-header">
+        <h2>Multi-Device Cloud Sync</h2>
+        <button class="btn-close-modal">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p style="color: var(--md-sys-color-on-surface-variant); font-size: 0.85rem; margin-bottom: 16px;">
+          Synchronize your reading progress, bookmarks, and library across your phone, tablet, and PC.
+        </p>
+
+        <!-- P2P Pairing -->
+        <div style="background: var(--md-sys-color-surface-container-high); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-lg); padding: 16px; margin-bottom: 18px;">
+          <h4 style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--md-sys-color-primary)" stroke-width="2" fill="none">
+              <rect x="2" y="2" width="20" height="8" rx="2"></rect>
+              <rect x="2" y="14" width="20" height="8" rx="2"></rect>
+              <line x1="6" y1="6" x2="6.01" y2="6"></line>
+              <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            </svg>
+            Device-to-Device Direct Pairing (WebRTC)
+          </h4>
+          <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+            <canvas id="sync-qr-canvas" width="150" height="150" style="border-radius: var(--md-shape-corner-md); border: 1px solid var(--md-sys-color-outline-variant);"></canvas>
+            <div style="flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 8px;">
+              <button class="m3-btn m3-btn-filled btn-sm" id="btn-generate-p2p-token">
+                Generate Pairing Code
+              </button>
+              <textarea id="sync-token-output" readonly placeholder="Pairing token appears here..." class="m3-textarea" style="height: 55px; font-size: 0.72rem; font-family: monospace;"></textarea>
+            </div>
+          </div>
+          <div style="margin-top: 12px; display: flex; gap: 8px;">
+            <input type="text" id="input-remote-sync-token" class="m3-input" placeholder="Paste pairing code from Device 1..." style="font-size: 0.8rem;">
+            <button class="m3-btn m3-btn-tonal btn-sm" id="btn-accept-p2p-token">Connect</button>
+          </div>
+        </div>
+
+        <!-- JSON Backup -->
+        <div style="background: var(--md-sys-color-surface-container-high); border: 1px solid var(--md-sys-color-outline-variant); border-radius: var(--md-shape-corner-lg); padding: 16px;">
+          <h4 style="margin-bottom: 8px;">Cloud Snapshot Backup</h4>
+          <div style="display: flex; gap: 10px;">
+            <button class="m3-btn m3-btn-tonal btn-sm" id="btn-export-sync-json">Export Backup</button>
+            <button class="m3-btn m3-btn-tonal btn-sm" id="btn-import-sync-json">Import Backup</button>
+            <input type="file" id="file-sync-json-import" accept=".json" class="hidden">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT BOOK METADATA -->
+  <div class="modal-overlay" id="modal-edit-book">
+    <div class="modal-backdrop"></div>
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2>Edit Comic Details</h2>
+        <button class="btn-close-modal">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <form id="form-edit-book">
+        <div class="m3-text-field">
+          <label>Title</label>
+          <input type="text" name="title" class="m3-input" required>
+        </div>
+
+        <div class="m3-text-field">
+          <label>Author / Artist</label>
+          <input type="text" name="author" class="m3-input">
+        </div>
+
+        <div class="m3-text-field">
+          <label>Genre</label>
+          <input type="text" name="genre" class="m3-input">
+        </div>
+
+        <div class="m3-text-field">
+          <label>Shelf / Folder</label>
+          <select name="folderId" class="m3-select"></select>
+        </div>
+
+        <div class="m3-text-field">
+          <label>Reading Direction</label>
+          <select name="direction" class="m3-select">
+            <option value="ltr">Left-to-Right (Western)</option>
+            <option value="rtl">Right-to-Left (Manga)</option>
+          </select>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <button type="button" class="m3-btn m3-btn-tonal" id="btn-delete-book" style="color: #ef4444;">
+            Delete
+          </button>
+          <button type="submit" class="m3-btn m3-btn-filled">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: KEYBOARD SHORTCUTS -->
+  <div class="modal-overlay" id="modal-keyboard-shortcuts">
+    <div class="modal-backdrop"></div>
+    <div class="modal-window">
+      <div class="modal-header">
+        <h2>Shortcuts & Gestures</h2>
+        <button class="btn-close-modal">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem;">
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-primary);">Swipe / →:</strong> Next Page
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-primary);">Swipe / ←:</strong> Previous Page
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-secondary);">Double-Tap:</strong> 2x Quick Zoom
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-secondary);">Pinch:</strong> Smooth Zoom & Pan
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-primary);">Tap Edges:</strong> Turn Next / Prev
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-primary);">Tap Center:</strong> Toggle Toolbars
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-tertiary);">B:</strong> Toggle Bookmark
+        </div>
+        <div style="background: var(--md-sys-color-surface-container-high); padding: 10px; border-radius: var(--md-shape-corner-md);">
+          <strong style="color: var(--md-sys-color-primary);">F:</strong> Fullscreen Mode
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOADING PROGRESS -->
+  <div class="modal-overlay" id="modal-loading">
+    <div class="modal-backdrop"></div>
+    <div class="modal-window" style="max-width: 360px; text-align: center;">
+      <h3 id="loading-modal-text">Processing files...</h3>
+      <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: var(--md-shape-corner-full); margin-top: 18px; overflow: hidden;">
+        <div id="loading-progress-bar" style="width: 20%; height: 100%; background: var(--md-sys-color-primary); transition: width 0.2s;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- External & Vendor Scripts -->
+  <script src="vendor/jszip.min.js"></script>
+  <script src="vendor/pdf.min.js"></script>
+  <script src="vendor/page-flip.browser.js"></script>
+
+  <!-- Application Modules -->
+  <script src="js/db.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/sync.js"></script>
+  <script src="js/page-flip-controller.js"></script>
+  <script src="js/library.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Bind demo sample buttons
+    document.getElementById('btn-load-sample-all')?.addEventListener('click', () => {
+      window.app.preloadSampleComics();
+      window.app.closeModal('modal-add-comic');
+    });
+
+    document.getElementById('btn-load-sample-nebula')?.addEventListener('click', async () => {
+      const book = await window.comicDB.getBook('sample_nebula_01');
+      window.app.closeModal('modal-add-comic');
+      if (book) {
+        window.app.openBookInReader(book);
+      } else {
+        await window.app.preloadSampleComics(true);
+        const b = await window.comicDB.getBook('sample_nebula_01');
+        if (b) window.app.openBookInReader(b);
+      }
+    });
+
+    document.getElementById('btn-load-sample-samurai')?.addEventListener('click', async () => {
+      const book = await window.comicDB.getBook('sample_samurai_01');
+      window.app.closeModal('modal-add-comic');
+      if (book) {
+        window.app.openBookInReader(book);
+      } else {
+        await window.app.preloadSampleComics(true);
+        const b = await window.comicDB.getBook('sample_samurai_01');
+        if (b) window.app.openBookInReader(b);
+      }
+    });
+
+    document.getElementById('btn-load-sample-pdf')?.addEventListener('click', () => {
+      window.app.closeModal('modal-add-comic');
+      window.comicLibrary.importFromURL(
+        'https://raw.githubusercontent.com/mozilla/pdf.js/master/web/compressed.tracemonkey-pldi-09.pdf',
+        { customTitle: 'Mozilla Quantum PDF Document', genre: 'Graphic Novel' }
+      );
+    });
+
+    // M3 Bottom Sheet source card clicking
+    document.querySelectorAll('.m3-source-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.m3-source-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        const tabId = card.dataset.tab;
+        if (tabId) window.app.switchAddModalTab(tabId);
+      });
+    });
+  </script>
+</body>
+</html>
